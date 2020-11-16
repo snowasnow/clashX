@@ -6,23 +6,24 @@
 //  Copyright © 2018年 yichengchen. All rights reserved.
 //
 
-import Foundation
 import CocoaLumberjack
+import Foundation
 class Logger {
     static let shared = Logger()
-    var fileLogger:DDFileLogger = DDFileLogger()
-    
+    var fileLogger: DDFileLogger = DDFileLogger()
+
     private init() {
-        DDLog.add(DDTTYLogger.sharedInstance) // TTY = Xcode console
-        fileLogger.rollingFrequency = TimeInterval(60*60*24)  // 24 hours
+        #if DEBUG
+            DDLog.add(DDOSLogger.sharedInstance)
+        #endif
+        fileLogger.rollingFrequency = TimeInterval(60 * 60 * 24) // 24 hours
         fileLogger.logFileManager.maximumNumberOfLogFiles = 3
         DDLog.add(fileLogger)
-
     }
-    
-    private func logToFile(msg:String,level:ClashLogLevel) {
+
+    private func logToFile(msg: String, level: ClashLogLevel) {
         switch level {
-        case .debug:
+        case .debug, .silent:
             DDLogDebug(msg)
         case .error:
             DDLogError(msg)
@@ -34,11 +35,11 @@ class Logger {
             DDLogVerbose(msg)
         }
     }
-    
-    static func log(msg:String ,level:ClashLogLevel = .unknow) {
+
+    static func log(_ msg: String, level: ClashLogLevel = .info) {
         shared.logToFile(msg: "[\(level.rawValue)] \(msg)", level: level)
     }
-    
+
     func logFilePath() -> String {
         return fileLogger.logFileManager.sortedLogFilePaths.first ?? ""
     }

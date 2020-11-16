@@ -7,33 +7,30 @@
 //
 
 import Foundation
-import ServiceManagement
+import RxCocoa
 import RxSwift
-
-
+import ServiceManagement
 
 public class LaunchAtLogin {
-    private static let id = "com.west2online.ClashX.LaunchHelper"
-    
     static let shared = LaunchAtLogin()
 
     private init() {
-        self.isEnableVirable.value = self.isEnabled
+        isEnableVirable.accept(isEnabled)
     }
-    
+
     public var isEnabled: Bool {
         get {
-            guard let jobs = (SMCopyAllJobDictionaries(kSMDomainUserLaunchd).takeRetainedValue() as? [[String: AnyObject]]) else {
-                return false
-            }
-            let job = jobs.first { $0["Label"] as! String == LaunchAtLogin.id }
-            return job?["OnDemand"] as? Bool ?? false
+            return LoginServiceKit.isExistLoginItems()
         }
         set {
-            SMLoginItemSetEnabled(LaunchAtLogin.id as CFString, newValue)
-            isEnableVirable.value = newValue
+            if newValue {
+                LoginServiceKit.addLoginItems()
+            } else {
+                LoginServiceKit.removeLoginItems()
+            }
+            isEnableVirable.accept(newValue)
         }
     }
-    
-    var isEnableVirable = Variable<Bool>(false)
+
+    var isEnableVirable = BehaviorRelay<Bool>(value: false)
 }

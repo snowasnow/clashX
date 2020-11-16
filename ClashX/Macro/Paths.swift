@@ -7,6 +7,16 @@
 //
 import Foundation
 
-let kConfigFilePath = "\(NSHomeDirectory())/.config/clash/config.ini"
-
 let kConfigFolderPath = "\(NSHomeDirectory())/.config/clash/"
+
+let kDefaultConfigFilePath = "\(kConfigFolderPath)config.yaml"
+
+struct Paths {
+    static func localConfigPath(for name: String) -> String {
+        return "\(kConfigFolderPath)\(configFileName(for: name))"
+    }
+
+    static func configFileName(for name: String) -> String {
+        return "\(name).yaml"
+    }
+}

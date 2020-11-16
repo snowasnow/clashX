@@ -7,7 +7,16 @@
 //
 import Foundation
 
-let kShouldUpDateConfig =  Notification.Name("kShouldUpDateConfig")
-let kConfigFileChange =  Notification.Name("kConfigFileChange")
-let kSystemNetworkStatusDidChange =  Notification.Name("kSystemNetworkStatusDidChange")
+extension Notification.Name {
+    static let configFileChange = Notification.Name("kConfigFileChange")
+    static let speedTestFinishForProxy = Notification.Name("kSpeedTestFinishForProxy")
+    static let reloadDashboard = Notification.Name("kReloadDashboard")
+    static let systemNetworkStatusIPUpdate = Notification.Name("systemNetworkStatusIPUpdate")
+    static let systemNetworkStatusDidChange = Notification.Name("kSystemNetworkStatusDidChange")
+    static let proxyMeneViewShowLeftPadding = Notification.Name("kProxyMeneViewShowLeftPadding")
 
+    static func proxyUpdate(for name: ClashProxyName) -> Notification.Name {
+        return Notification.Name("kProxyUpdate_\(name)")
+    }
+    
+}
