@@ -61,7 +61,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillFinishLaunching(_ notification: Notification) {
         signal(SIGPIPE, SIG_IGN)
-        checkOnlyOneClashX()
         // crash recorder
         failLaunchProtect()
         registCrashLogger()
@@ -102,7 +101,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         initClashCore()
         setupData()
         runAfterConfigReload = { [weak self] in
-            self?.selectOutBoundModeWithMenory()
             if !ConfigManager.builtInApiMode {
                 self?.selectAllowLanWithMenory()
             }
@@ -268,14 +266,29 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 }
 
             }.disposed(by: disposeBag)
-    }
-
-    func checkOnlyOneClashX() {
-        let runningCount = NSRunningApplication.runningApplications(withBundleIdentifier: Bundle.main.bundleIdentifier ?? "").count
-        if runningCount > 1 {
-            Logger.log("running count => \(runningCount), exit")
-            assertionFailure()
-            NSApp.terminate(nil)
+        
+        if !PrivilegedHelperManager.shared.isHelperCheckFinished.value &&
+            ConfigManager.shared.proxyPortAutoSet {
+            PrivilegedHelperManager.shared.isHelperCheckFinished
+                .filter({$0})
+                .take(1)
+                .takeWhile{_ in ConfigManager.shared.proxyPortAutoSet}
+                .observeOn(MainScheduler.instance)
+                .subscribe { _ in
+                    SystemProxyManager.shared.enableProxy()
+                }.disposed(by: disposeBag)
+        }
+        
+        if !PrivilegedHelperManager.shared.isHelperCheckFinished.value {
+            proxySettingMenuItem.target = nil
+            PrivilegedHelperManager.shared.isHelperCheckFinished
+                .filter({$0})
+                .take(1)
+                .observeOn(MainScheduler.instance)
+                .subscribe { [weak self] _ in
+                    guard let self = self else { return }
+                    self.proxySettingMenuItem.target = self
+                }.disposed(by: disposeBag)
         }
     }
 
@@ -453,6 +466,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     ConfigManager.selectConfigName = newConfigName
                 }
                 self.selectProxyGroupWithMemory()
+                self.selectOutBoundModeWithMenory()
                 MenuItemFactory.recreateProxyMenuItems()
                 NotificationCenter.default.post(name: .reloadDashboard, object: nil)
             }
