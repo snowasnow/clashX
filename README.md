@@ -61,7 +61,7 @@ Checkout [Clash](https://github.com/Dreamacro/clash) or [SS-Rule-Snippet for Cla
 
 ### Change your status menu icon
 
-  Place your icon file in the `~/.config/clash/menuImage.png`  then restart ClashX
+  Place your icon file in the `~/.config/clash/menuImage.png`  then restart ClashX.
 
 ### Change default system ignore list.
 
